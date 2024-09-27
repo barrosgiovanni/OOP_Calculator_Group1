@@ -111,7 +111,7 @@ namespace OOP_Calculator_Group1
     }
     internal class Program
     {        
-        static void Main(string[] args) // ass: Daniel 
+        static void Main(string[] args) // ass: Daniel // we'll be working on the main method.
         {
         }
     }
