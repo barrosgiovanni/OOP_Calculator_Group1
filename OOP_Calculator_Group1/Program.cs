@@ -95,7 +95,7 @@ namespace OOP_Calculator_Group1
         public static List<string> OutputList { get; set; } 
         public static Stack<Operator> OperatorStack { get; set; }
         // methods
-        public static List<string> Tokenize (string userInput) // ass: Patricia // this method receives user input (a string) and returns a List of strings. Contains the tokenize expression.
+        public static List<string> Tokenize (string userInput) // ass: Patricia Diniz // this method receives user input (a string) and returns a List of strings. Contains the tokenize expression.
         {
             return new List<string>();
         }
