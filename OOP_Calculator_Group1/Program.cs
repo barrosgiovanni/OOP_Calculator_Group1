@@ -97,22 +97,59 @@ namespace OOP_Calculator_Group1
         // methods
         public static List<string> Tokenize (string userInput) // ass: Patricia // this method receives user input (a string) and returns a List of strings. Contains the tokenize expression.
         {
+            //Example:
+            /*
+                user input: 1+ 2 - (-3 *4.15)
+                tokenized expression: { "1", "+", "2", "-", "(", "-3", "*", "4.15", ")" }
+             */
             return new List<string>();
         }
         public static Stack<string> ToPostFix (List<string> infixExp) // ass: Max // this method receives a tokenized list of strings and converts it to a Stack of strings.
         {
+            /*
+                Here we use the shunting yard algorithm to build a postfix expression:
+                example:
+                    infix     postfix
+                    1 + 2  -->   12+
+                    1+2*3  -->   123*+
+                Hint: We use the ExpressionProcessor.Outputlist and OperatorStack to build the correct postfixExp for each infix expression
+             */
             return new Stack<string>(); 
         }
-        public static string ExecutePostFix (Stack<string> postfixExp) // ass: Giovanni // this method receives a Stack of strings and return a postfix expression (string type).
+        public static string ExecutePostFix (Stack<string> postfixExp) // ass: Giovanni 
         {
+            // this method receives a strings Stack (postfix exp)  and returns the result(string type).
             return "";
         }
 
     }
     internal class Program
-    {        
+    {    
+        //Encapsulation Coupling Method.
+        static void Calculate(string userInput)
+        {
+            List<string> tokenizedExp = ExpressionProcessor.Tokenize(userInput);
+            Stack<string> postfixExp = ExpressionProcessor.ToPostFix(tokenizedExp);
+            Console.WriteLine($"Result: {ExpressionProcessor.ExecutePostFix(postfixExp)}");
+        }
+        
         static void Main(string[] args) // ass: Daniel // we'll be working on the main method.
         {
+            /*
+             As discussed in class... Feel free to play in here to test your methods.
+             Just remember to clear your changes before pushing, and to keep the methods execution chain as it is once you're done testing
+             please and thank you.
+             */
+            Console.WriteLine("-- Calculator --");
+            Console.WriteLine("Enter your expression:");
+            string mathExpression = "";
+            while (mathExpression.ToLower().Trim() != "exit")
+            {
+                mathExpression = Console.ReadLine();
+                Calculate(mathExpression);
+
+            }
+            
         }
     }
 }
