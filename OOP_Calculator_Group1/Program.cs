@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,7 +31,7 @@ namespace OOP_Calculator_Group1
 
     class Addition : Operator
     {
-        Addition()
+        public Addition()
         {
             Symbol = '+';
             Precedence = 1;
@@ -42,7 +43,7 @@ namespace OOP_Calculator_Group1
     }
     class Subtraction : Operator
     {
-        Subtraction()
+        public Subtraction()
         {
             Symbol = '-';
             Precedence = 1;
@@ -54,7 +55,7 @@ namespace OOP_Calculator_Group1
     }
     class Multiplication : Operator
     {
-        Multiplication()
+        public Multiplication()
         {
             Symbol = '*';
             Precedence = 2;
@@ -66,7 +67,7 @@ namespace OOP_Calculator_Group1
     }
     class Division : Operator
     {
-        Division()
+        public Division() 
         {
             Symbol = '/';
             Precedence = 2;
@@ -78,7 +79,7 @@ namespace OOP_Calculator_Group1
     }
     class LeftParenthesis : Operator
     {
-        LeftParenthesis()
+        public LeftParenthesis()
         {
             Symbol = '(';
             Precedence = 3;
@@ -116,12 +117,70 @@ namespace OOP_Calculator_Group1
              */
             return new Stack<string>(); 
         }
-        public static string ExecutePostFix (Stack<string> postfixExp) // ass: Giovanni 
+        public static string ExecutePostFix (Stack<string> postfixExp)
         {
-            // this method receives a strings Stack (postfix exp)  and returns the result(string type).
-            return "";
+            // this method receives a strings Stack (postfix exp) and returns the result(string type).
+            List<string> temp = new List<string>(); // list created to hold values as we check for operator.
+            int opIndex = 0; // will hold the index of the operator sign.
+            bool opDetected = false;
+            while (postfixExp.Count + temp.Count > 1)
+            {
+                if (postfixExp.Count > 0) // as long as we see elements inside the stack, we'll be popping the last item and adding to the temporary list.
+                {
+                    temp.Add(postfixExp.Pop()); 
+                }
+                for (int index = 0; index < temp.Count - 2; index++)
+                {
+                    if ((temp[index] == "+" || temp[index] == "*" || temp[index] == "-" || temp[index] == "/") && float.TryParse(temp[index + 1], out float value1) && float.TryParse(temp[index + 2], out float value2))
+                    // if we find the pattern of a operator and 2 numbers in sequence.
+                    {
+                        opIndex = index;
+                        opDetected = true;
+                        break;
+                    }
+                    continue;
+                }
+                if (temp.Count > 2 && opDetected) // as long as we have 3 elements in the temporary list.
+                {
+                    Operator op = null;
+                    float current = 0; // variable to hold the accumulated result. It will then be transfered to the temporary list later.
+                    if (temp[opIndex] == "+")
+                    {
+                        op = new Addition(); // executing the operation according to the operator.
+                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1]));
+                        temp.RemoveRange(opIndex, 3); // after we complete the operation, we must remove the current values inside the temporary list.
+                        temp.Add(current.ToString()); // transfering result to the temporary list.
+                    }
+                    if (temp[opIndex] == "-")
+                    {
+                        op = new Subtraction();
+                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1]));
+                        temp.RemoveRange(opIndex, 3);
+                        temp.Add(current.ToString());
+                    }
+                    if (temp[opIndex] == "*")
+                    {
+                        op = new Multiplication();
+                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1]));
+                        temp.RemoveRange(opIndex, 3);
+                        temp.Add(current.ToString());
+                    }
+                    if (temp[opIndex] == "*")
+                    {
+                        op = new Division();
+                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1])); 
+                        temp.RemoveRange(opIndex, 3);
+                        temp.Add(current.ToString());
+                    }
+                    for (int index = temp.Count - 1; index >= 0; index--) 
+                    {
+                        postfixExp.Push(temp[index]); // transfering final result to postfixExp variable.
+                    }
+                    temp.Clear(); // cleaning the temporary list.
+                }
+            }
+            return postfixExp.Pop();
         }
-
     }
     internal class Program
     {    
@@ -133,7 +192,7 @@ namespace OOP_Calculator_Group1
             Console.WriteLine($"Result: {ExpressionProcessor.ExecutePostFix(postfixExp)}");
         }
         
-        static void Main(string[] args) // ass: Daniel // we'll be working on the main method.
+        static void Main(string[] args) // ass: Daniel
         {
             /*
              As discussed in class... Feel free to play in here to test your methods.
@@ -149,7 +208,7 @@ namespace OOP_Calculator_Group1
                 Calculate(mathExpression);
 
             }
-            
+
         }
     }
 }
