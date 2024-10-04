@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,7 +31,7 @@ namespace OOP_Calculator_Group1
 
     class Addition : Operator
     {
-        Addition()
+        public Addition()
         {
             Symbol = '+';
             Precedence = 1;
@@ -42,7 +43,7 @@ namespace OOP_Calculator_Group1
     }
     class Subtraction : Operator
     {
-        Subtraction()
+        public Subtraction()
         {
             Symbol = '-';
             Precedence = 1;
@@ -54,7 +55,7 @@ namespace OOP_Calculator_Group1
     }
     class Multiplication : Operator
     {
-        Multiplication()
+        public Multiplication()
         {
             Symbol = '*';
             Precedence = 2;
@@ -66,7 +67,7 @@ namespace OOP_Calculator_Group1
     }
     class Division : Operator
     {
-        Division()
+        public Division() 
         {
             Symbol = '/';
             Precedence = 2;
@@ -78,7 +79,7 @@ namespace OOP_Calculator_Group1
     }
     class LeftParenthesis : Operator
     {
-        LeftParenthesis()
+        public LeftParenthesis()
         {
             Symbol = '(';
             Precedence = 3;
@@ -129,11 +130,6 @@ namespace OOP_Calculator_Group1
                         {
                             isNegative = true; // Set the flag for negative number
                         }
-                        //else
-                        //{
-                        //    tokens.Add(c.ToString()); // Add operator to list
-                        //    isOperator = true;
-                        //}
                         else // include a multiplication signal before parentheses
                         {
                             if (c == '(' && tokens.Count > 0 && (char.IsDigit(tokens.Last().Last()) || tokens.Last().Last() == ')'))                        
@@ -172,32 +168,106 @@ namespace OOP_Calculator_Group1
 
         public static Stack<string> ToPostFix (List<string> infixExp) // ass: Max // this method receives a tokenized list of strings and converts it to a Stack of strings.
         {
+            /*
+                Here we use the shunting yard algorithm to build a postfix expression:
+                example:
+                    infix     postfix
+                    1 + 2  -->   12+
+                    1+2*3  -->   123*+
+                Hint: We use the ExpressionProcessor.Outputlist and OperatorStack to build the correct postfixExp for each infix expression
+             */
             return new Stack<string>(); 
         }
-        public static string ExecutePostFix (Stack<string> postfixExp) // ass: Giovanni // this method receives a Stack of strings and return a postfix expression (string type).
+        public static string ExecutePostFix (Stack<string> postfixExp)
         {
-            return "";
+            // this method receives a strings Stack (postfix exp) and returns the result(string type).
+            List<string> temp = new List<string>(); // list created to hold values as we check for operator.
+            int opIndex = 0; // will hold the index of the operator sign.
+            bool opDetected = false;
+            while (postfixExp.Count + temp.Count > 1)
+            {
+                if (postfixExp.Count > 0) // as long as we see elements inside the stack, we'll be popping the last item and adding to the temporary list.
+                {
+                    temp.Add(postfixExp.Pop()); 
+                }
+                for (int index = 0; index < temp.Count - 2; index++)
+                {
+                    if ((temp[index] == "+" || temp[index] == "*" || temp[index] == "-" || temp[index] == "/") && float.TryParse(temp[index + 1], out float value1) && float.TryParse(temp[index + 2], out float value2))
+                    // if we find the pattern of a operator and 2 numbers in sequence.
+                    {
+                        opIndex = index;
+                        opDetected = true;
+                        break;
+                    }
+                    continue;
+                }
+                if (temp.Count > 2 && opDetected) // as long as we have 3 elements in the temporary list.
+                {
+                    Operator op = null;
+                    float current = 0; // variable to hold the accumulated result. It will then be transfered to the temporary list later.
+                    if (temp[opIndex] == "+")
+                    {
+                        op = new Addition(); // executing the operation according to the operator.
+                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1]));
+                        temp.RemoveRange(opIndex, 3); // after we complete the operation, we must remove the current values inside the temporary list.
+                        temp.Add(current.ToString()); // transfering result to the temporary list.
+                    }
+                    if (temp[opIndex] == "-")
+                    {
+                        op = new Subtraction();
+                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1]));
+                        temp.RemoveRange(opIndex, 3);
+                        temp.Add(current.ToString());
+                    }
+                    if (temp[opIndex] == "*")
+                    {
+                        op = new Multiplication();
+                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1]));
+                        temp.RemoveRange(opIndex, 3);
+                        temp.Add(current.ToString());
+                    }
+                    if (temp[opIndex] == "*")
+                    {
+                        op = new Division();
+                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1])); 
+                        temp.RemoveRange(opIndex, 3);
+                        temp.Add(current.ToString());
+                    }
+                    for (int index = temp.Count - 1; index >= 0; index--) 
+                    {
+                        postfixExp.Push(temp[index]); // transfering final result to postfixExp variable.
+                    }
+                    temp.Clear(); // cleaning the temporary list.
+                }
+            }
+            return postfixExp.Pop();
         }
-
     }
     internal class Program
-    {        
-       static void Main(string[] args) // ass: Daniel 
+    {    
+        //Encapsulation Coupling Method.
+        static void Calculate(string userInput)
         {
-            //This code was written by Patricia to test method Tokenize
-            Console.WriteLine("Type a mathematic expression to calculate:");
-            string userInput = Console.ReadLine();
-
-            List<string> tokens = ExpressionProcessor.Tokenize(userInput); // shows each char
- 
-
-            Console.WriteLine("These are the tokens:");
-            foreach (var token in tokens)
+            List<string> tokenizedExp = ExpressionProcessor.Tokenize(userInput);
+            Stack<string> postfixExp = ExpressionProcessor.ToPostFix(tokenizedExp);
+            Console.WriteLine($"Result: {ExpressionProcessor.ExecutePostFix(postfixExp)}");
+        }
+        
+        static void Main(string[] args) // ass: Daniel
+        {
+            /*
+             As discussed in class... Feel free to play in here to test your methods.
+             Just remember to clear your changes before pushing, and to keep the methods execution chain as it is once you're done testing
+             please and thank you.
+             */
+            Console.WriteLine("-- Calculator --");
+            Console.WriteLine("Enter your expression:");
+            string mathExpression = "";
+            while (mathExpression.ToLower().Trim() != "exit")
             {
-                Console.WriteLine(token); // Print on screen each char added in the expression
+                mathExpression = Console.ReadLine();
+                Calculate(mathExpression);
             }
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey(); 
         }
     }
 }
