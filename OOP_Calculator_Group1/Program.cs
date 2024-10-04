@@ -19,13 +19,20 @@ namespace OOP_Calculator_Group1
         public bool isLeftAssociative { get; set; } = true; // we're not using rn because we're not doing exp and srt
 
         public abstract float Execute(float operand1 = 0, float operand2 = 0);
-        private static bool IsOperator(char op) // method overloading to accept both char and string
+        public static bool IsOperator(char op) // method overloading to accept both char and string
         {
+            if (op == '+' || op == '-' || op == '*' || op == '/')
+                return true;
+
             return false;
         }
-        private static bool IsOperator(string op) // method overloading to accept both char and string
+        public static bool IsOperator(string op) // method overloading to accept both char and string
         {
+            if (op == "+" || op == "-" || op == "*" || op == "/")
+                return true;
+
             return false;
+            
         }
     }
 
@@ -77,9 +84,9 @@ namespace OOP_Calculator_Group1
             return operand1 / operand2;
         }
     }
-    class LeftParenthesis : Operator
+    class left_parentheses : Operator
     {
-        public LeftParenthesis()
+        public left_parentheses()
         {
             Symbol = '(';
             Precedence = 3;
@@ -91,11 +98,18 @@ namespace OOP_Calculator_Group1
     }
 
     static class ExpressionProcessor 
-    {   
+    {
         // properties
-        public static List<string> OutputList { get; set; } 
-        public static Stack<Operator> OperatorStack { get; set; }
+        public static List<string> OutputList { get; set; } = new List<string>();
+        public static Stack<Operator> OperatorStack { get; set; } = new Stack<Operator>();
+
         // methods
+        private static Stack<string> _convertListToStack(List<string> list)
+        {
+            Stack<string> stack = new Stack<string>();
+            for (int j = 0; j < list.Count; j++) stack.Push(list[j]);
+            return stack;
+        }
 
         public static List<string> Tokenize(string userInput) // ass: Patricia Diniz // this method receives user input (a string) and returns a List of strings. Contains the tokenize expression.
         {
@@ -176,7 +190,72 @@ namespace OOP_Calculator_Group1
                     1+2*3  -->   123*+
                 Hint: We use the ExpressionProcessor.Outputlist and OperatorStack to build the correct postfixExp for each infix expression
              */
-            return new Stack<string>(); 
+
+
+
+            Operator addition = new Addition();
+            Operator subtraction = new Subtraction();
+            Operator multiplication = new Multiplication();
+            Operator division = new Division();
+            Operator left_parentheses = new left_parentheses();
+
+            void StackByPrecedence(string op)
+            {
+                Operator operador = null;
+
+                if (op == "+") operador = addition;
+                else if (op == "-") operador = subtraction;
+                else if (op == "*") operador = multiplication;
+                else if (op == "/") operador = division;
+
+                if (OperatorStack.Count == 0 || OperatorStack.Peek() == left_parentheses)
+                {
+                    OperatorStack.Push(operador);
+                }
+                else
+                {
+                    if (operador.Precedence > OperatorStack.Peek().Precedence)
+                        OperatorStack.Push(operador);
+
+                    else if (operador.Precedence <= OperatorStack.Peek().Precedence)
+                    {
+                        while (OperatorStack.Count > 0 && OperatorStack.Peek() != left_parentheses && OperatorStack.Peek().Precedence >= operador.Precedence)
+                            OutputList.Add(OperatorStack.Pop().Symbol + "");
+
+                        OperatorStack.Push(operador);
+                    }
+                }
+            }
+
+            infixExp.ForEach((num) =>
+            {
+
+                if (float.TryParse(num, out float numero))
+                    OutputList.Add(numero.ToString());
+
+                else if (num == "(")
+                    OperatorStack.Push(left_parentheses);
+
+                else if (Operator.IsOperator(num))
+                    StackByPrecedence(num);
+
+                else if (num == ")")
+                {
+                    string op;
+                    while ((op = OperatorStack.Pop().Symbol + "") != "(")
+                        OutputList.Add(op);
+                }
+
+            });
+
+            while (OperatorStack.Count > 0)
+                OutputList.Add(OperatorStack.Pop().Symbol + "");
+
+
+            //return _convertListToStack(OutputList);
+            Stack<string> postfixStack = _convertListToStack(OutputList);
+            OutputList.Clear();
+            return postfixStack;
         }
         public static string ExecutePostFix (Stack<string> postfixExp)
         {
@@ -248,8 +327,10 @@ namespace OOP_Calculator_Group1
         //Encapsulation Coupling Method.
         static void Calculate(string userInput)
         {
-            List<string> tokenizedExp = ExpressionProcessor.Tokenize(userInput);
+            List<string> tokenizedExp =  ExpressionProcessor.Tokenize(userInput);
+
             Stack<string> postfixExp = ExpressionProcessor.ToPostFix(tokenizedExp);
+
             Console.WriteLine($"Result: {ExpressionProcessor.ExecutePostFix(postfixExp)}");
         }
         
