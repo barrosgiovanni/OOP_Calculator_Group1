@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 // Assignment 1 - Calculator
@@ -144,7 +146,7 @@ namespace OOP_Calculator_Group1
                         }
                         else // include a multiplication signal before parentheses
                         {
-                            if (c == '(' && tokens.Count > 0 && (char.IsDigit(tokens.Last().Last()) || tokens.Last().Last() == ')'))                        
+                            if (c == '(' && tokens.Count > 0 && (char.IsDigit(tokens.Last().Last()) || tokens.Last().Last() == ')'))
                             {
                                 tokens.Add("*"); // Add multiplication sign before '(' if needed
                             }
@@ -257,7 +259,6 @@ namespace OOP_Calculator_Group1
             }
             return isOperationDetected;
         }
-
         private static float ExecuteOperator(List<string> temp, int index)
         {
             Operator op = null;
@@ -292,7 +293,6 @@ namespace OOP_Calculator_Group1
             }
             return current;
         }
-
         public static string ExecutePostFix (Stack<string> postfixExp) // this method receives a strings Stack (postfix exp) and returns the result(string type).
         {
             List<string> temp = new List<string>(); // list created to hold values as we check for operator.
@@ -319,11 +319,55 @@ namespace OOP_Calculator_Group1
         }
     }
     internal class Program
-    {    
+    {
         //Encapsulation Coupling Method.
+        static bool ValidateExpression(string userInput)
+        {
+            bool isExpressionValid = true;
+
+            //1st validation: cheking if string is empty. If empty, we want to inform the user and keep on asking for the input.
+            if (String.IsNullOrEmpty(userInput))
+            {
+                isExpressionValid = false;
+                Console.WriteLine("Expression is empty. Please, try again.");
+            }
+
+            // 2nd validation: checking for letters inside the input. Regex used [A-Za-z].
+            for (int i = 0; i < userInput.Count(); i++) // looping through each one of the digits and checking if it is a letter.
+            {
+                if (Regex.IsMatch(userInput[i].ToString(), @"^[a-zA-Z]+$"))
+                {
+                    isExpressionValid = false; // if we detect a letter we make the expression invalid and inform the user.
+                    Console.WriteLine("Letters are now allowed within the expression. Please, review it and try again.");
+                    break;
+                }
+            }
+            // 3rd validation: we can't see more than one instance of "." between two operators.
+            bool isAcceptingDots = true;
+            int numOfdots = 0;
+            for (int i = 0; i < userInput.Count(); i++)
+            {
+                if (userInput[i] == '.')
+                {
+                    if (!isAcceptingDots)
+                    {
+                        isExpressionValid = false; // if the user typed a dot before, we make the expression invalid.
+                        Console.WriteLine("Using two or more dots '.' between operators invalidates your expression. Please, review it and try again.");
+                    }
+                    isAcceptingDots = false; // if he's typying the dot for the first time, we make not acceptable from now on.
+                    numOfdots++; // we add one dot to the count.
+                }
+                if (userInput[i] == '+' || userInput[i] == '-' || userInput[i] == '*' || userInput[i] == '/')
+                {
+                    isAcceptingDots = true; // when he types op, he is zeroing everything.
+                    numOfdots = 0;
+                }
+            }
+            return isExpressionValid;
+        }
         static void Calculate(string userInput)
         {
-            List<string> tokenizedExp =  ExpressionProcessor.Tokenize(userInput); // Working fine.
+            List<string> tokenizedExp =  ExpressionProcessor.Tokenize(userInput);
             Stack<string> postfixExp = ExpressionProcessor.ToPostFix(tokenizedExp);
             Console.WriteLine($"Result: {ExpressionProcessor.ExecutePostFix(postfixExp)}");
         }
@@ -341,7 +385,11 @@ namespace OOP_Calculator_Group1
             while (mathExpression.ToLower().Trim() != "exit")
             {
                 mathExpression = Console.ReadLine();
-                Calculate(mathExpression);
+                if (ValidateExpression(mathExpression))
+                {
+                    Calculate(mathExpression);
+                }
+                Console.WriteLine("Enter your expression:");
             }
         }
     }
