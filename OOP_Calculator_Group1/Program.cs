@@ -254,7 +254,7 @@ namespace OOP_Calculator_Group1
        
         
         // Method returns a Operator object
-      /*   static Operator GetOperator(string tokens)
+        static Operator GetOperator(string tokens)
 
         {
 
@@ -286,7 +286,7 @@ namespace OOP_Calculator_Group1
             }
 
 
-        } */
+        } 
 
 
         public static string ExecutePostFix (Stack<string> postfixExp) // ass: Giovanni // this method receives a Stack of strings and return a postfix expression (string type).
