@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -21,6 +22,7 @@ namespace OOP_Calculator_Group1
         public abstract float Execute(float operand1 = 0, float operand2 = 0);
         public static bool IsOperator(char op) // method overloading to accept both char and string
         {
+
             return false;
         }
        public static bool IsOperator(string op) // method overloading to accept both char and string
@@ -36,6 +38,7 @@ namespace OOP_Calculator_Group1
             Symbol = '+';
             Precedence = 1;
         }
+
         public override float Execute(float operand1 = 0, float operand2 = 0)
         {
             return operand1 + operand2;
@@ -125,30 +128,33 @@ namespace OOP_Calculator_Group1
             OutputList = new List<string>();
             OperatorStack = new Stack<Operator>();
 
-        
-       
-            foreach(string tokens in infixExp) {
+
+
+
+            foreach (string tokens in infixExp)
+            {
 
                 // Code inside
-                
+
                 // Checks if the tokenized list of strings contains any numbers
 
                 if (float.TryParse(tokens, out float number))
                 {
 
                     //  Adds only the numbers from the tokenized list of strings to the OutputList
-                  
+
                     OutputList.Add(tokens);
+
 
                 }
 
 
-                // Checks if the tokenized list of strings has any operators
+                // Checks if the tokenized list of strings has any operators 
 
 
-                if (tokens.Contains("+") || tokens.Contains("-") || tokens.Contains("*") ||
-                    tokens.Contains("/") || tokens.Contains("(") || tokens.Contains(")"))
+                if (tokens.Contains("+") || tokens.Contains("-") || tokens.Contains("*") || tokens.Contains("/") || tokens.Contains("(") || tokens.Contains(")"))
                 {
+
 
                     Operator op = GetOperator(tokens);
 
@@ -158,6 +164,9 @@ namespace OOP_Calculator_Group1
 
                         // While there is an operator at the top of the stack (Peek()) with greater or equal precedence
                         // pop it from the stack to the OutputList.
+
+
+
 
                         while (OperatorStack.Count > 0 && OperatorStack.Peek().Precedence >= op.Precedence)
                         {
@@ -171,9 +180,11 @@ namespace OOP_Calculator_Group1
                         }
 
 
+
                         // Push the current operator onto the OperatorStack
-                       
+
                         OperatorStack.Push(op);
+
 
                     }
 
@@ -191,8 +202,8 @@ namespace OOP_Calculator_Group1
                     }
 
 
-                 
-               
+
+
 
 
                     if (tokens == ")")
@@ -201,10 +212,12 @@ namespace OOP_Calculator_Group1
 
                         // Pop the right parenthesis onto the OutputList until a left parenthesis is at the top of the OperatorStack ((Peek())).
 
-                        while (OperatorStack.Count > 0 && OperatorStack.Peek().Symbol.ToString() != "(") 
+
+
+                        while (OperatorStack.Count > 0 && OperatorStack.Peek().Symbol.ToString() != "(")
                         {
 
-                          OutputList.Add(OperatorStack.Pop().Symbol.ToString());
+                            OutputList.Add(OperatorStack.Pop().Symbol.ToString());
 
 
                         }
@@ -217,26 +230,32 @@ namespace OOP_Calculator_Group1
 
                             OperatorStack.Pop().Symbol.ToString();
 
-                           
+
                         }
 
-                       
                     }
-               
-             }
 
-               
-         }
+                }
+
+            }
+
+            // Pop out the remaining operators from the OutpustList
+
+            while (OperatorStack.Count > 0)
+            {
+               OutputList.Add(OperatorStack.Pop().Symbol.ToString());
+
+            }
 
 
-         
-        return new Stack<string>(OutputList); 
+            return new Stack<string>(OutputList); 
     }
       
        
         
-        // Return a Operator object
-        public static Operator GetOperator(string tokens)
+        // Method returns a Operator object
+      /*   static Operator GetOperator(string tokens)
+
         {
 
             switch (tokens){
@@ -244,6 +263,7 @@ namespace OOP_Calculator_Group1
                 case "+":
 
                     return new Addition();
+
 
                 case "-":
 
@@ -254,20 +274,19 @@ namespace OOP_Calculator_Group1
                     return new Multiplication();
 
 
+
                 case "/":
 
                     return new Division();
 
-                
 
                 default:
-
                     return null;
 
             }
 
 
-        }
+        } */
 
 
         public static string ExecutePostFix (Stack<string> postfixExp) // ass: Giovanni // this method receives a Stack of strings and return a postfix expression (string type).
@@ -282,9 +301,33 @@ namespace OOP_Calculator_Group1
         //Encapsulation Coupling Method.
         static void Calculate(string userInput)
         {
-            List<string> tokenizedExp = ExpressionProcessor.Tokenize(userInput);
+
+            List<string> tokenizedExp = new List<string>();
+
+            //  ExpressionProcessor.Tokenize(userInput);
+
+            tokenizedExp.Add("1");
+            tokenizedExp.Add("+");
+            tokenizedExp.Add("3");
+            tokenizedExp.Add("*");
+            tokenizedExp.Add("1");
+
+
+
+
             Stack<string> postfixExp = ExpressionProcessor.ToPostFix(tokenizedExp);
-            Console.WriteLine($"Result: {ExpressionProcessor.ExecutePostFix(postfixExp)}");
+
+
+            // Testing 
+            while (postfixExp.Count > 0)
+            {
+                Console.WriteLine(postfixExp.Pop());
+               
+            }
+
+
+
+            //   Console.WriteLine($"Result: {ExpressionProcessor.ExecutePostFix(postfixExp)}");
         }
 
 
