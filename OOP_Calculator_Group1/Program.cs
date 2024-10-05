@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 // Assignment 1 - Calculator
@@ -172,7 +173,7 @@ namespace OOP_Calculator_Group1
 
 
                         // Push the current operator onto the OperatorStack
-                       
+
                         OperatorStack.Push(op);
 
                     }
@@ -191,8 +192,8 @@ namespace OOP_Calculator_Group1
                     }
 
 
-                 
-               
+
+
 
 
                     if (tokens == ")")
@@ -201,10 +202,10 @@ namespace OOP_Calculator_Group1
 
                         // Pop the right parenthesis onto the OutputList until a left parenthesis is at the top of the OperatorStack ((Peek())).
 
-                        while (OperatorStack.Count > 0 && OperatorStack.Peek().Symbol.ToString() != "(") 
+                        while (OperatorStack.Count > 0 && OperatorStack.Peek().Symbol.ToString() != "(")
                         {
 
-                          OutputList.Add(OperatorStack.Pop().Symbol.ToString());
+                            OutputList.Add(OperatorStack.Pop().Symbol.ToString());
 
 
                         }
@@ -217,20 +218,28 @@ namespace OOP_Calculator_Group1
 
                             OperatorStack.Pop().Symbol.ToString();
 
-                           
+
                         }
 
-                       
+
                     }
-               
-             }
+
+                }
 
                
          }
 
 
-         
-        return new Stack<string>(OutputList); 
+
+            while (OperatorStack.Count > 0)
+            {
+               OutputList.Add(OperatorStack.Pop().Symbol.ToString());
+
+            }
+
+
+
+            return new Stack<string>(OutputList); 
     }
       
        
@@ -267,7 +276,7 @@ namespace OOP_Calculator_Group1
             }
 
 
-        }
+        } 
 
 
         public static string ExecutePostFix (Stack<string> postfixExp) // ass: Giovanni // this method receives a Stack of strings and return a postfix expression (string type).
@@ -282,8 +291,31 @@ namespace OOP_Calculator_Group1
         //Encapsulation Coupling Method.
         static void Calculate(string userInput)
         {
-            List<string> tokenizedExp = ExpressionProcessor.Tokenize(userInput);
+            List<string> tokenizedExp = new List<string>();
+
+            // Testing 
+            tokenizedExp.Add("2");
+            tokenizedExp.Add("-");
+            tokenizedExp.Add("1");
+            tokenizedExp.Add("*");
+            tokenizedExp.Add("(");
+            tokenizedExp.Add("3");
+            tokenizedExp.Add("/");
+            tokenizedExp.Add("3");
+            tokenizedExp.Add(")");
+  
+            //ExpressionProcessor.Tokenize(userInput)
+
             Stack<string> postfixExp = ExpressionProcessor.ToPostFix(tokenizedExp);
+
+
+            while(postfixExp.Count > 0)
+            {
+                Console.WriteLine(postfixExp.Pop());
+            }
+
+
+
             Console.WriteLine($"Result: {ExpressionProcessor.ExecutePostFix(postfixExp)}");
         }
 
