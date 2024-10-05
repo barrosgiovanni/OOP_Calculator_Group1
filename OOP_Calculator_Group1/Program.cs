@@ -32,7 +32,6 @@ namespace OOP_Calculator_Group1
                 return true;
 
             return false;
-            
         }
     }
 
@@ -96,7 +95,6 @@ namespace OOP_Calculator_Group1
             throw new Exception("It is not doing anything.");
         }
     }
-
     static class ExpressionProcessor 
     {
         // properties
@@ -161,7 +159,6 @@ namespace OOP_Calculator_Group1
                 {
                     tokens.Add(currentNumber);
                 }
-
                 if (!isOperator)
                 {
                     throw new ArgumentException("The string must contain at least one operator");
@@ -177,9 +174,6 @@ namespace OOP_Calculator_Group1
             }
             return tokens; // Return list of tokens        
         }
-
-
-
         public static Stack<string> ToPostFix (List<string> infixExp) // ass: Max // this method receives a tokenized list of strings and converts it to a Stack of strings.
         {
             /*
@@ -190,9 +184,6 @@ namespace OOP_Calculator_Group1
                     1+2*3  -->   123*+
                 Hint: We use the ExpressionProcessor.Outputlist and OperatorStack to build the correct postfixExp for each infix expression
              */
-
-
-
             Operator addition = new Addition();
             Operator subtraction = new Subtraction();
             Operator multiplication = new Multiplication();
@@ -229,89 +220,94 @@ namespace OOP_Calculator_Group1
 
             infixExp.ForEach((num) =>
             {
-
                 if (float.TryParse(num, out float numero))
                     OutputList.Add(numero.ToString());
-
                 else if (num == "(")
                     OperatorStack.Push(left_parentheses);
-
                 else if (Operator.IsOperator(num))
                     StackByPrecedence(num);
-
                 else if (num == ")")
                 {
                     string op;
                     while ((op = OperatorStack.Pop().Symbol + "") != "(")
                         OutputList.Add(op);
                 }
-
             });
 
             while (OperatorStack.Count > 0)
                 OutputList.Add(OperatorStack.Pop().Symbol + "");
-
 
             //return _convertListToStack(OutputList);
             Stack<string> postfixStack = _convertListToStack(OutputList);
             OutputList.Clear();
             return postfixStack;
         }
-        public static string ExecutePostFix (Stack<string> postfixExp)
+        private static bool isOperationDetected(List<string> list, ref int index) // 1 2 + 3 * -->  * 3 + 2 1  --> * 3
         {
-            // this method receives a strings Stack (postfix exp) and returns the result(string type).
+            bool isOperationDetected = false;
+            for (int j = 0; j < list.Count - 2; j++)
+            {
+                if (Operator.IsOperator(list[j]) && float.TryParse(list[j + 1], out float num1) && float.TryParse(list[j + 2], out float num2))
+                {
+                    index = j;
+                    isOperationDetected = true;
+                    break;
+                }
+                continue;
+            }
+            return isOperationDetected;
+        }
+
+        private static float ExecuteOperator(List<string> temp, int index)
+        {
+            Operator op = null;
+            float current = 0; // variable to hold the accumulated result. It will then be transfered to the temporary list later.
+            if (temp[index] == "+") // checking for each one of the operators and executing operation according to.
+            {
+                op = new Addition(); 
+                current = op.Execute(float.Parse(temp[index + 2]), float.Parse(temp[index + 1]));
+                temp.RemoveRange(index, 3);
+                temp.Add(current.ToString());
+            }
+            else if (temp[index] == "-")
+            {
+                op = new Subtraction();
+                current = op.Execute(float.Parse(temp[index + 2]), float.Parse(temp[index + 1]));
+                temp.RemoveRange(index, 3);
+                temp.Add(current.ToString());
+            }
+            else if (temp[index] == "*")
+            {
+                op = new Multiplication();
+                current = op.Execute(float.Parse(temp[index + 2]), float.Parse(temp[index + 1]));
+                temp.RemoveRange(index, 3);
+                temp.Add(current.ToString());
+            }
+            else if (temp[index] == "/")
+            {
+                op = new Division();
+                current = op.Execute(float.Parse(temp[index + 2]), float.Parse(temp[index + 1]));
+                temp.RemoveRange(index, 3);
+                temp.Add(current.ToString());
+            }
+            return current;
+        }
+
+        public static string ExecutePostFix (Stack<string> postfixExp) // this method receives a strings Stack (postfix exp) and returns the result(string type).
+        {
             List<string> temp = new List<string>(); // list created to hold values as we check for operator.
             int opIndex = 0; // will hold the index of the operator sign.
-            bool opDetected = false;
+            bool isOpDetected = false;
             while (postfixExp.Count + temp.Count > 1)
             {
                 if (postfixExp.Count > 0) // as long as we see elements inside the stack, we'll be popping the last item and adding to the temporary list.
                 {
                     temp.Add(postfixExp.Pop()); 
                 }
-                for (int index = 0; index < temp.Count - 2; index++)
+                isOpDetected = isOperationDetected(temp, ref opIndex);
+                if (temp.Count > 2 && isOpDetected) // as long as we have 3 elements in the temporary list.
                 {
-                    if ((temp[index] == "+" || temp[index] == "*" || temp[index] == "-" || temp[index] == "/") && float.TryParse(temp[index + 1], out float value1) && float.TryParse(temp[index + 2], out float value2))
-                    // if we find the pattern of a operator and 2 numbers in sequence.
-                    {
-                        opIndex = index;
-                        opDetected = true;
-                        break;
-                    }
-                    continue;
-                }
-                if (temp.Count > 2 && opDetected) // as long as we have 3 elements in the temporary list.
-                {
-                    Operator op = null;
-                    float current = 0; // variable to hold the accumulated result. It will then be transfered to the temporary list later.
-                    if (temp[opIndex] == "+")
-                    {
-                        op = new Addition(); // executing the operation according to the operator.
-                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1]));
-                        temp.RemoveRange(opIndex, 3); // after we complete the operation, we must remove the current values inside the temporary list.
-                        temp.Add(current.ToString()); // transfering result to the temporary list.
-                    }
-                    if (temp[opIndex] == "-")
-                    {
-                        op = new Subtraction();
-                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1]));
-                        temp.RemoveRange(opIndex, 3);
-                        temp.Add(current.ToString());
-                    }
-                    if (temp[opIndex] == "*")
-                    {
-                        op = new Multiplication();
-                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1]));
-                        temp.RemoveRange(opIndex, 3);
-                        temp.Add(current.ToString());
-                    }
-                    if (temp[opIndex] == "*")
-                    {
-                        op = new Division();
-                        current = op.Execute(float.Parse(temp[opIndex + 2]), float.Parse(temp[opIndex + 1])); 
-                        temp.RemoveRange(opIndex, 3);
-                        temp.Add(current.ToString());
-                    }
+                    ExecuteOperator(temp, opIndex);
                     for (int index = temp.Count - 1; index >= 0; index--) 
                     {
                         postfixExp.Push(temp[index]); // transfering final result to postfixExp variable.
@@ -327,13 +323,11 @@ namespace OOP_Calculator_Group1
         //Encapsulation Coupling Method.
         static void Calculate(string userInput)
         {
-            List<string> tokenizedExp =  ExpressionProcessor.Tokenize(userInput);
-
+            List<string> tokenizedExp =  ExpressionProcessor.Tokenize(userInput); // Working fine.
             Stack<string> postfixExp = ExpressionProcessor.ToPostFix(tokenizedExp);
-
             Console.WriteLine($"Result: {ExpressionProcessor.ExecutePostFix(postfixExp)}");
         }
-        
+
         static void Main(string[] args) // ass: Daniel
         {
             /*
