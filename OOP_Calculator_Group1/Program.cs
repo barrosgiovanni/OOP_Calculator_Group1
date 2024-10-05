@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 // Assignment 1 - Calculator
-// Group 1: Daniel Benjumea, Giovanni Barros, Max Dyson, Patricia Magalhaes, Vagner Emmanuel da Cruz
+// Group 1: Daniel Benjumea, Giovanni Barros, Max Dyson, Patricia Magalhaes.
 
 namespace OOP_Calculator_Group1
 {
